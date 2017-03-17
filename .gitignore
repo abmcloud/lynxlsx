@@ -1,7 +1,6 @@
 /.bundle/
 /vendor/bundle/
 
-.rspec
 .rubocop.yml
 .ruby-version
 Gemfile.lock
