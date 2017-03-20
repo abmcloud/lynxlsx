@@ -15,7 +15,7 @@ module Lynxlsx
           path = Pathname.new(@output)
           path.unlink if path.exist?
           path.open('wb') { |io| write_to_io(io, &block) }
-        when IO
+        when IO, StringIO
           write_to_io(@output, &block)
         else
           raise ArgumentError
