@@ -8,6 +8,7 @@ module Lynxlsx
   autoload :ContentTypes, 'lynxlsx/content_types'
   autoload :Relationships, 'lynxlsx/relationships'
   autoload :Styles, 'lynxlsx/styles'
+  autoload :Table, 'lynxlsx/table'
   autoload :Workbook, 'lynxlsx/workbook'
   autoload :Worksheet, 'lynxlsx/worksheet'
   autoload :XML, 'lynxlsx/xml'

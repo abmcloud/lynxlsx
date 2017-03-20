@@ -3,12 +3,21 @@ require 'hescape'
 
 module Lynxlsx
   class Worksheet
-    attr_reader :id, :name
+    attr_reader :id, :name, :relationships, :tables, :last_col, :last_row
 
     def initialize(id, name)
       @id = id
       @name = name
       @columns = []
+      @relationships = Relationships.new(part_name)
+      @tables = []
+      @last_col = 0
+      @last_row = 0
+      @column_indexes = ColumnIndexes.new
+    end
+
+    def last_cell
+      "#{@column_indexes[@last_col - 1]}#{@last_row}" if @last_col > 0 && @last_row > 0
     end
 
     # Writes a new row to the worksheet
@@ -22,6 +31,9 @@ module Lynxlsx
     # worksheet.add_row([1, 'foo_bar', Time.now])
     # worksheet.add_row([1, 123.45], styles: [qty_cell_style, price_cell_style])
     def add_row(row_values, options = {})
+      @last_col = row_values.size
+      @last_row += 1
+
       styles = options[:styles] || []
       default_style = options[:default_style]
 
@@ -30,6 +42,13 @@ module Lynxlsx
         @current_buf << self.class.build_cell_xml(value, styles[i] || default_style)
       end
       @current_buf << '</row>'
+    end
+
+    def add_table
+      table = Table.new
+      yield table
+      @tables << table
+      @relationships.add("../../#{table.part_name}", table.relationship_type)
     end
 
     def columns=(columns)
@@ -52,6 +71,15 @@ module Lynxlsx
         buf << '<cols>'
         @columns.each { |column| buf << self.class.build_col_xml(column) }
         buf << '</cols>'
+      end
+
+      if @tables.any?
+        buf << %(<tableParts count="#{@tables.size}">)
+        @tables.each do |table|
+          rid = @relationships.rid("../../#{table.part_name}")
+          buf << %(<tablePart r:id="#{rid}"/>)
+        end
+        buf << '</tableParts>'
       end
 
       buf << '</worksheet>'

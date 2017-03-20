@@ -6,23 +6,27 @@ module Lynxlsx
     end
 
     def [](index)
-      @indexes[index] || (@indexes[index] = evaluate_index(index))
+      @indexes[index] || (@indexes[index] = self.class.evaluate_index(index))
     end
 
-    private
-
-    def num2chr(num)
-      (65 + num % 26).chr
-    end
-
-    def evaluate_index(index)
-      list = []
-      while index >= 26
+    class << self
+      def evaluate_index(index)
+        list = []
+        while index >= 26
+          list.unshift num2chr(index)
+          index /= 26
+        end
         list.unshift num2chr(index)
-        index /= 26
+        list.join
       end
-      list.unshift num2chr(index)
-      list.join
+
+      alias [] evaluate_index
+
+      private
+
+      def num2chr(num)
+        (65 + num % 26).chr
+      end
     end
   end
 end

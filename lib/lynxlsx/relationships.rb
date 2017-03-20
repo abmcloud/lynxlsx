@@ -1,6 +1,12 @@
 # frozen_string_literal: true
+require 'forwardable'
+
 module Lynxlsx
   class Relationships
+    extend Forwardable
+
+    def_delegators :@entries, :any?, :empty?
+
     attr_reader :part_name
 
     def self.next_rid

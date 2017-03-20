@@ -37,6 +37,13 @@ module Lynxlsx
       @content_types.add_part(ws)
       @workbook_rels.add_part(ws)
       @handler.write_entry(ws.part_name) { |buf| ws.write_to_buf(buf, &block) }
+      ws.tables.each do |table|
+        @content_types.add_part(table)
+        @handler.write_entry(table.part_name, table.method(:write_to_buf))
+      end
+      if ws.relationships.any?
+        @handler.write_entry(ws.relationships.part_name, ws.relationships.method(:write_to_buf))
+      end
     end
 
     def part_name
