@@ -5,7 +5,7 @@ module Lynxlsx
   class Worksheet
     attr_reader :id, :name, :relationships, :tables, :last_col, :last_row
 
-    def initialize(id, name)
+    def initialize(id, name, options = {})
       @id = id
       @name = name
       @columns = []
@@ -14,6 +14,14 @@ module Lynxlsx
       @last_col = 0
       @last_row = 0
       @column_indexes = ColumnIndexes.new
+
+      if options.key?(:columns)
+        @columns = options[:columns].map.with_index do |column_options, i|
+          column = { min: i + 1, max: i + 1 }
+          column[:customWidth] = 1 if column_options.key?(:width)
+          column_options.merge(column)
+        end
+      end
     end
 
     def last_cell
@@ -51,27 +59,21 @@ module Lynxlsx
       @relationships.add("../../#{table.part_name}", table.relationship_type)
     end
 
-    def columns=(columns)
-      @columns = columns.map.with_index do |options, i|
-        options.merge(min: i + 1, max: i + 1)
-      end
-    end
-
     def write_to_buf(buf)
       buf << XML::VERSION
       buf << %(<worksheet xmlns="#{XML::NS_SSML}" xmlns:r="#{XML::NS_REL}" xml:space="preserve">)
-
-      buf << '<sheetData>'
-      @current_buf = buf
-      yield self
-      @current_buf = nil
-      buf << '</sheetData>'
 
       if @columns.any?
         buf << '<cols>'
         @columns.each { |column| buf << self.class.build_col_xml(column) }
         buf << '</cols>'
       end
+
+      buf << '<sheetData>'
+      @current_buf = buf
+      yield self
+      @current_buf = nil
+      buf << '</sheetData>'
 
       if @tables.any?
         buf << %(<tableParts count="#{@tables.size}">)
@@ -81,7 +83,6 @@ module Lynxlsx
         end
         buf << '</tableParts>'
       end
-
       buf << '</worksheet>'
     end
 
@@ -108,7 +109,8 @@ module Lynxlsx
       case value
       when Numeric then %(<c#{attrs}><v>#{value}</v></c>)
       when Time then %(<c#{attrs}><v>#{time_to_oa_date(value)}</v></c>)
-      else %(<c t="inlineStr"#{attrs}><is><t>#{Hescape.escape_html(value)}</t></is></c>)
+      when nil then %(<c t="inlineStr"#{attrs}><is><t></t></is></c>)
+      else %(<c t="inlineStr"#{attrs}><is><t>#{Hescape.escape_html(value.to_s)}</t></is></c>)
       end
     end
 

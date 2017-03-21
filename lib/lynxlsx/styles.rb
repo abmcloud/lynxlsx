@@ -4,9 +4,9 @@ module Lynxlsx
     def initialize
       @num_formats = []
       @fonts = []
-      @fills = []
-      @borders = []
       @cell_xfs = []
+
+      add_cell_xfs
     end
 
     def add_num_format(format_code)
@@ -54,12 +54,16 @@ module Lynxlsx
         buf << '</fonts>'
       end
 
+      # TODO
+      buf << '<fills count="1"><fill/></fills>'
+      buf << '<borders count="1"><border/></borders>'
+
       if @cell_xfs.any?
         buf << %(<cellXfs count="#{@cell_xfs.size}">)
-        @cell_xfs.each do |cell_xfs|
+        @cell_xfs.each_with_index do |cell_xfs, i|
           buf << '<xf'
           cell_xfs.each { |k, v| buf << %( #{k}="#{v}") }
-          buf << '></xf>'
+          buf << %(/>)
         end
         buf << '</cellXfs>'
       end

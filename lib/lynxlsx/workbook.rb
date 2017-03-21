@@ -31,8 +31,8 @@ module Lynxlsx
       end
     end
 
-    def write_worksheet(name, &block)
-      ws = Worksheet.new(@worksheets.count + 1, name)
+    def write_worksheet(name, options = {}, &block)
+      ws = Worksheet.new(@worksheets.count + 1, name, options)
       @worksheets << ws
       @content_types.add_part(ws)
       @workbook_rels.add_part(ws)
