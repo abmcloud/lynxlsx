@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-require 'hescape'
+require 'cgi/escape'
 
 module Lynxlsx
   class Worksheet
@@ -110,7 +110,7 @@ module Lynxlsx
       when Numeric then %(<c#{attrs}><v>#{value}</v></c>)
       when Time then %(<c#{attrs}><v>#{time_to_oa_date(value)}</v></c>)
       when nil then %(<c t="inlineStr"#{attrs}><is><t></t></is></c>)
-      else %(<c t="inlineStr"#{attrs}><is><t>#{Hescape.escape_html(value.to_s)}</t></is></c>)
+      else %(<c t="inlineStr"#{attrs}><is><t>#{CGI.escapeHTML(value.to_s)}</t></is></c>)
       end
     end
 
